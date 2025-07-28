@@ -594,6 +594,24 @@ void GraphManager::get_name_and_namespace(
         node_name = participant_name;
         node_namespace = "/";
     }
+
+    // Apply namespace prefix if configured
+    if (!namespace_prefix_.empty() && namespace_prefix_ != "/")
+    {
+        if (node_namespace == "/")
+        {
+            node_namespace = namespace_prefix_;
+        }
+        else
+        {
+            node_namespace = namespace_prefix_ + node_namespace;
+        }
+    }
+}
+
+void GraphManager::set_namespace_prefix(const std::string& namespace_prefix)
+{
+    namespace_prefix_ = namespace_prefix;
 }
 
 GraphManager::ParticipantListener::ParticipantListener(

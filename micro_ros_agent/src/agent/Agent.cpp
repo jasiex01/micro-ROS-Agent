@@ -32,6 +32,26 @@ bool Agent::create(
         int argc,
         char** argv)
 {
+    // Parse namespace argument before passing to XRCE agent
+    for (int i = 1; i < argc - 1; ++i)
+    {
+        if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--namespace") == 0)
+        {
+            node_namespace_prefix_ = std::string(argv[i + 1]);
+            // Ensure namespace starts with /
+            if (node_namespace_prefix_.empty() || node_namespace_prefix_[0] != '/')
+            {
+                node_namespace_prefix_ = "/" + node_namespace_prefix_;
+            }
+            // Ensure namespace doesn't end with / (unless it's root namespace)
+            if (node_namespace_prefix_.length() > 1 && node_namespace_prefix_.back() == '/')
+            {
+                node_namespace_prefix_.pop_back();
+            }
+            break;
+        }
+    }
+
     bool result = xrce_dds_agent_instance_.create(argc, argv);
     if (result)
     {
@@ -299,10 +319,17 @@ auto it = graph_manager_map_.find(domain_id);
     if (it != graph_manager_map_.end()) {
         return it->second;
     }else{
+        auto graph_manager = std::make_shared<graph_manager::GraphManager>(domain_id);
+        // Set namespace prefix if one was specified
+        if (!node_namespace_prefix_.empty())
+        {
+            graph_manager->set_namespace_prefix(node_namespace_prefix_);
+        }
+        
         return graph_manager_map_.insert(
             std::make_pair(
                 domain_id,
-                std::make_shared<graph_manager::GraphManager>(domain_id)
+                graph_manager
             )
         ).first->second;
     }
