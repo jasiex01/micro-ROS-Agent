@@ -16,6 +16,7 @@
 #define _UROS_AGENT_GRAPH_MANAGER_CPP
 
 #include <agent/graph_manager/graph_manager.hpp>
+#include <agent/utils/namespace.hpp>
 
 #include <memory>
 #include <string>
@@ -598,14 +599,7 @@ void GraphManager::get_name_and_namespace(
     // Apply namespace prefix if configured
     if (!namespace_prefix_.empty() && namespace_prefix_ != "/")
     {
-        if (node_namespace == "/")
-        {
-            node_namespace = namespace_prefix_;
-        }
-        else
-        {
-            node_namespace = namespace_prefix_ + node_namespace;
-        }
+        node_namespace = utils::Namespace::apply_namespace_to_node(node_namespace, namespace_prefix_);
     }
 }
 

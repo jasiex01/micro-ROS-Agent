@@ -16,6 +16,7 @@
 #define _UROS_AGENT_AGENT_CPP
 
 #include <agent/Agent.hpp>
+#include <agent/utils/namespace.hpp>
 
 #include <utility>
 #include <memory>
@@ -32,7 +33,6 @@ bool Agent::create(
         int argc,
         char** argv)
 {
-    // Parse namespace argument before passing to XRCE agent
     for (int i = 1; i < argc - 1; ++i)
     {
         if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--namespace") == 0)
@@ -215,17 +215,8 @@ bool Agent::create(
          */
         std::function<void (eprosima::fastrtps::TopicAttributes&)> on_create_topic
             ([&](eprosima::fastrtps::TopicAttributes& attrs) -> void
-            {                
-                if (!namespace_prefix_.empty() && namespace_prefix_ != "/")
-                {
-                    std::string topic = attrs.getTopicName().c_str();
-
-                    // Get the leading rq, rr or rt
-                    std::string prefix = topic.substr(0, 2);
-                    std::string rest = topic.substr(2);
-
-                    attrs.topicName = prefix + namespace_prefix_ + rest;
-                }
+            {
+                attrs.topicName = utils::Namespace::apply_namespace_to_topic(attrs.getTopicName().c_str(), namespace_prefix_);
             });
         xrce_dds_agent_instance_.add_middleware_callback(
             eprosima::uxr::Middleware::Kind::FASTDDS,
