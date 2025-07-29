@@ -37,16 +37,14 @@ bool Agent::create(
     {
         if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--namespace") == 0)
         {
-            node_namespace_prefix_ = std::string(argv[i + 1]);
-            // Ensure namespace starts with /
-            if (node_namespace_prefix_.empty() || node_namespace_prefix_[0] != '/')
+            namespace_prefix_ = std::string(argv[i + 1]);
+            if (namespace_prefix_.empty() || namespace_prefix_[0] != '/')
             {
-                node_namespace_prefix_ = "/" + node_namespace_prefix_;
+                namespace_prefix_ = "/" + namespace_prefix_;
             }
-            // Ensure namespace doesn't end with / (unless it's root namespace)
-            if (node_namespace_prefix_.length() > 1 && node_namespace_prefix_.back() == '/')
+            if (namespace_prefix_.length() > 1 && namespace_prefix_.back() == '/')
             {
-                node_namespace_prefix_.pop_back();
+                namespace_prefix_.pop_back();
             }
             break;
         }
@@ -213,6 +211,28 @@ bool Agent::create(
             std::move(on_create_requester));
 
         /**
+         * Add CREATE_TOPIC callback.
+         */
+        std::function<void (eprosima::fastrtps::TopicAttributes&)> on_create_topic
+            ([&](eprosima::fastrtps::TopicAttributes& attrs) -> void
+            {                
+                if (!namespace_prefix_.empty() && namespace_prefix_ != "/")
+                {
+                    std::string topic = attrs.getTopicName().c_str();
+
+                    // Get the leading rq, rr or rt
+                    std::string prefix = topic.substr(0, 2);
+                    std::string rest = topic.substr(2);
+
+                    attrs.topicName = prefix + namespace_prefix_ + rest;
+                }
+            });
+        xrce_dds_agent_instance_.add_middleware_callback(
+            eprosima::uxr::Middleware::Kind::FASTDDS,
+            eprosima::uxr::middleware::CallbackKind::CREATE_TOPIC,
+            std::move(on_create_topic));
+
+        /**
          * Add DELETE_REQUESTER callback.
          */
         std::function<void (
@@ -321,9 +341,9 @@ auto it = graph_manager_map_.find(domain_id);
     }else{
         auto graph_manager = std::make_shared<graph_manager::GraphManager>(domain_id);
         // Set namespace prefix if one was specified
-        if (!node_namespace_prefix_.empty())
+        if (!namespace_prefix_.empty())
         {
-            graph_manager->set_namespace_prefix(node_namespace_prefix_);
+            graph_manager->set_namespace_prefix(namespace_prefix_);
         }
         
         return graph_manager_map_.insert(
