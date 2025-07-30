@@ -39,18 +39,10 @@ std::string Namespace::apply_namespace_to_topic(
         return topic_name;
     }
 
-    std::string service_prefix = topic_name.substr(0, 3);
-    std::string remaining_topic = topic_name.substr(3);
+    std::string service_prefix = topic_name.substr(0, 2);
+    std::string remaining_topic = topic_name.substr(2);
                 
-    if (remaining_topic[0] == '/')
-    {
-        return service_prefix + namespace_prefix + remaining_topic;
-    }
-    else
-    {
-        return service_prefix + namespace_prefix + "/" + remaining_topic;
-    }
-
+    return service_prefix + namespace_prefix + remaining_topic;
 }
 
 std::string Namespace::apply_namespace_to_node(
