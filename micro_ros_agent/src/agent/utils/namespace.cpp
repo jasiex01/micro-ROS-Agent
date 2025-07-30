@@ -46,20 +46,17 @@ std::string Namespace::apply_namespace_to_topic(
 }
 
 std::string Namespace::apply_namespace_to_node(
-        const std::string& node_name,
+        const std::string& node_namespace,
         const std::string& namespace_prefix)
 {
-    if (namespace_prefix.empty() || namespace_prefix == "/")
-    {
-        return node_name;
-    }
-
-    std::string result = node_name;
-    if (result.empty() || result[0] != '/')
-    {
-        result = "/" + result;
-    }
-    return namespace_prefix + result;
+        if (node_namespace == "/")
+        {
+            return namespace_prefix;
+        }
+        else
+        {
+            return namespace_prefix + node_namespace;
+        }
 }
 
 }  // namespace utils

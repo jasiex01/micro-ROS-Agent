@@ -60,7 +60,7 @@ public:
      * @returns The node name with namespace applied.
      */
     static std::string apply_namespace_to_node(
-            const std::string& node_name,
+            const std::string& node_namespace,
             const std::string& namespace_prefix);
 };
 
