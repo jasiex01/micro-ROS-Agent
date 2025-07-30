@@ -596,10 +596,9 @@ void GraphManager::get_name_and_namespace(
         node_namespace = "/";
     }
 
-    // Apply namespace prefix if configured
     if (!namespace_prefix_.empty() && namespace_prefix_ != "/")
     {
-        node_namespace = utils::Namespace::apply_namespace_to_node(node_namespace, namespace_prefix_);
+        node_namespace = namespace_prefix_ + node_namespace;
     }
 }
 
